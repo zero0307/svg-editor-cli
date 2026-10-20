@@ -1,0 +1,8 @@
+node_modules/
+dist/
+coverage/
+.npm-cache/
+artifacts/
+*.tmp
+.env*
+!.env.example

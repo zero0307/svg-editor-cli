@@ -1,0 +1,15 @@
+{
+  "name": "svg-editor-cli",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A transactional, object-oriented SVG editor for Lab1 Phase 1",
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "cli": "npm run build --silent && node dist/src/bootstrap/main.js",
+    "test": "npm run build --silent && node --test dist/test/*.test.js",
+    "test:coverage": "npm run build --silent && node --experimental-test-coverage --test dist/test/*.test.js",
+    "check": "npm test && node scripts/check-architecture.mjs"
+  }
+}
