@@ -5,8 +5,11 @@ import type { FileStore } from '../application/ports/FileStore.js';
 
 export class LocalFileStore implements FileStore {
   async read(path: string): Promise<string> {
-    try { return await readFile(path, 'utf8'); }
-    catch { throw new DomainError(`cannot read file: ${path}`); }
+    try {
+      return await readFile(path, 'utf8');
+    } catch {
+      throw new DomainError(`cannot read file: ${path}`);
+    }
   }
   async write(path: string, content: string): Promise<void> {
     const temporary = `${path}.${randomUUID()}.tmp`;

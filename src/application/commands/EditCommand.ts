@@ -8,7 +8,9 @@ export abstract class EditCommand {
   execute(document: SvgDocument): { document: SvgDocument; message: string } {
     const candidate = document.clone();
     const message = this.apply(candidate);
-    this.before = document; this.after = candidate; this.result = message;
+    this.before = document;
+    this.after = candidate;
+    this.result = message;
     return { document: candidate, message };
   }
   undo(): { document: SvgDocument; message: string } {

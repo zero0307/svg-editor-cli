@@ -11,7 +11,7 @@ export class Repl {
     for await (const line of lines) {
       const result = await this.router.execute(line);
       for (const message of result) output.write(`${message}\n`);
-      if (result.some(message => message.startsWith('error:'))) success = false;
+      if (result.some((message) => message.startsWith('error:'))) success = false;
       if (interactive) output.write('svg> ');
     }
     if (interactive) output.write('\n');

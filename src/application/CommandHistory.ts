@@ -9,19 +9,36 @@ export class CommandHistory {
   constructor(private readonly limit = 100) {}
   execute(command: EditCommand, document: SvgDocument): { document: SvgDocument; message: string } {
     const result = command.execute(document);
-    this.undoStack.push(command); if (this.undoStack.length > this.limit) this.undoStack.shift();
-    this.redoStack.length = 0; this.blocked = false; return result;
+    this.undoStack.push(command);
+    if (this.undoStack.length > this.limit) this.undoStack.shift();
+    this.redoStack.length = 0;
+    this.blocked = false;
+    return result;
   }
-  barrier(): void { this.undoStack.length = 0; this.redoStack.length = 0; this.blocked = true; }
+  barrier(): void {
+    this.undoStack.length = 0;
+    this.redoStack.length = 0;
+    this.blocked = true;
+  }
   undo(): { document: SvgDocument; message: string } {
-    this.check(); const command = this.undoStack.at(-1);
+    this.check();
+    const command = this.undoStack.at(-1);
     if (!command) throw new DomainError('nothing to undo');
-    const result = command.undo(); this.undoStack.pop(); this.redoStack.push(command); return result;
+    const result = command.undo();
+    this.undoStack.pop();
+    this.redoStack.push(command);
+    return result;
   }
   redo(): { document: SvgDocument; message: string } {
-    this.check(); const command = this.redoStack.at(-1);
+    this.check();
+    const command = this.redoStack.at(-1);
     if (!command) throw new DomainError('nothing to redo');
-    const result = command.redo(); this.redoStack.pop(); this.undoStack.push(command); return result;
+    const result = command.redo();
+    this.redoStack.pop();
+    this.undoStack.push(command);
+    return result;
   }
-  private check(): void { if (this.blocked) throw new DomainError('undo not allowed after io command'); }
+  private check(): void {
+    if (this.blocked) throw new DomainError('undo not allowed after io command');
+  }
 }

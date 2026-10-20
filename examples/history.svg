@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="300" viewBox="0 0 600 300">
+  <g id="scene">
+    <g id="nodes">
+      <rect id="left" x="84" y="108" width="144" height="72" fill="#4a90d9"/>
+      <circle id="right" cx="504" cy="144" r="36" fill="#f5a623"/>
+    </g>
+    <text id="title" x="50" y="40">Undo / redo playground</text>
+  </g>
+</svg>

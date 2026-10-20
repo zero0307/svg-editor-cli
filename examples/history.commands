@@ -1,0 +1,24 @@
+# Successful examples of group, nested ungroup, reorder, delete and undo/redo.
+init 600 300
+create g scene
+create rect left 50 80 120 60 #4a90d9 in scene
+create circle right 400 110 30 #f5a623 in scene
+create text title 50 40 "Undo / redo playground" in scene
+group nodes right left
+move nodes 20 10
+scale nodes 1.2
+undo
+redo
+ungroup nodes
+undo
+addto scene right
+undo
+front left
+undo
+back title
+undo
+delete nodes
+undo
+show left
+tree
+save examples/history.svg

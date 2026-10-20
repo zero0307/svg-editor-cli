@@ -21,5 +21,7 @@ export class Numbers {
     if (value <= 0) throw new DomainError(`${name} must be positive`);
     return value;
   }
-  static format(value: number): string { return String(Object.is(value, -0) ? 0 : value); }
+  static format(value: number): string {
+    return String(Object.is(value, -0) ? 0 : value);
+  }
 }
