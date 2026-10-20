@@ -1,0 +1,38 @@
+@startuml
+!pragma layout smetana
+skinparam componentStyle rectangle
+skinparam backgroundColor #FAFBFC
+skinparam shadowing false
+skinparam defaultFontName SansSerif
+skinparam ArrowColor #526777
+skinparam component {
+  BackgroundColor #FFFFFF
+  BorderColor #526777
+  FontColor #243746
+}
+title SVG Editor - Phase 1 dependency rules
+
+component "bootstrap\nComposition root" as Bootstrap #E9EEF5
+component "cli\nTokenizer / Router / Presenter / REPL" as Cli #E8F2FF
+component "application\nSvgEditor / Command / History\nFileStore and SvgCodec ports" as App #E7F4EB
+component "domain\nSvgDocument / Shape / Group" as Domain #FFF2D9
+component "infrastructure\nXML codec / Local files" as Infra #F3EAFE
+
+Bootstrap --> Cli
+Bootstrap --> App
+Bootstrap --> Infra
+Cli --> App
+Cli ..> Domain : read-only views / validation
+App --> Domain
+Infra ..> App : implements ports
+Infra --> Domain
+
+note bottom of Domain
+  No Node.js / XML / CLI dependencies.
+  Polymorphic move / scale / set / clone.
+end note
+note bottom of App
+  Edit candidate -> validate -> commit.
+  One command = one history entry.
+end note
+@enduml
