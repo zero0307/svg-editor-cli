@@ -50,6 +50,10 @@ test('import preserves text typography, custom metadata and degrades box to g', 
 });
 
 const invalidSvg = [
+  [
+    'prefixed attributes',
+    '<svg xmlns:xlink="http://www.w3.org/1999/xlink"><rect id="r" xlink:href="#other"/></svg>',
+  ],
   ['malformed', '<svg><rect></svg>'],
   ['duplicate ids', '<svg><rect id="r"/><circle id="r"/></svg>'],
   ['unknown type', '<svg><path id="p" d="M0 0"/></svg>'],

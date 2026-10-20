@@ -68,4 +68,20 @@ export class SvgDocument {
     copy.rootGroup = this.root.clone();
     return copy;
   }
+  validate(): void {
+    const ids = new Set<string>();
+    const visited = new Set<Shape>();
+    const visit = (shape: Shape, parent: Group, depth: number): void => {
+      if (depth > 128) throw new DomainError('SVG nesting exceeds 128 levels');
+      if (visited.has(shape)) throw new DomainError('invalid document: repeated shape or cycle');
+      if (shape.parent !== parent)
+        throw new DomainError('invalid document: inconsistent parent link');
+      if (ids.has(shape.id)) throw new DomainError(`id already exists: ${shape.id}`);
+      visited.add(shape);
+      ids.add(shape.id);
+      if (shape instanceof Group)
+        shape.children().forEach((child) => visit(child, shape, depth + 1));
+    };
+    this.root.children().forEach((shape) => visit(shape, this.root, 1));
+  }
 }

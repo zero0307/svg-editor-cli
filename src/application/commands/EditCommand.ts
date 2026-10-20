@@ -8,6 +8,7 @@ export abstract class EditCommand {
   execute(document: SvgDocument): { document: SvgDocument; message: string } {
     const candidate = document.clone();
     const message = this.apply(candidate);
+    candidate.validate();
     this.before = document;
     this.after = candidate;
     this.result = message;

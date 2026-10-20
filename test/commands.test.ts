@@ -240,6 +240,22 @@ test('before initialization all operational commands fail, help and comments wor
     ]);
 });
 
+test('successful CLI edits always remain within the readable SVG nesting limit', async () => {
+  const h = new TestHarness();
+  await h.run('init', 'create circle leaf 0 0 1');
+  for (let i = 1; i <= 128; i++) await h.run(`create g g${i}${i === 1 ? '' : ` in g${i - 1}`}`);
+  const before = h.snapshot();
+  for (const command of [
+    'create circle deep 0 0 1 in g128',
+    'group wrapper g128',
+    'addto g128 leaf',
+  ]) {
+    assert.deepEqual(await h.router.execute(command), ['error: SVG nesting exceeds 128 levels']);
+    assert.equal(h.snapshot(), before);
+  }
+  assert.equal(h.codec.encode(h.codec.decode(before).document), before);
+});
+
 test('history retains the most recent 100 edits', async () => {
   const h = new TestHarness();
   await h.run('init', 'create circle c 0 0 1');

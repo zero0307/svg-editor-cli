@@ -91,6 +91,9 @@ export class XmlSvgCodec implements SvgCodec {
       const attributes: Record<string, string> = {};
       for (let i = 0; i < element.attributes.length; i++) {
         const attr = element.attributes.item(i)!;
+        if (attr.prefix && attr.prefix !== 'xml' && attr.prefix !== 'xmlns') {
+          throw new DomainError(`unsupported SVG attribute namespace: ${attr.prefix}`);
+        }
         if (attr.name === 'transform' || attr.name === 'style' || /^on/i.test(attr.name))
           throw new DomainError(`unsupported SVG attribute: ${attr.name}`);
         attributes[attr.name] = attr.value;
@@ -106,6 +109,7 @@ export class XmlSvgCodec implements SvgCodec {
     };
     if (this.nonWhitespaceText(root)) throw new DomainError('unsupported text outside <text>');
     this.elements(root).forEach((element) => visit(element, document.root, 1));
+    document.validate();
     return { document, warnings };
   }
   encode(document: SvgDocument): string {
