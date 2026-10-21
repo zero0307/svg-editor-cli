@@ -1,0 +1,11 @@
+# Import the course's nested transforms, edit in canvas coordinates, and export.
+read examples/transforms.svg
+tree
+show label
+move nodeB 10 20
+undo
+scale nodeB 1.25
+undo
+ungroup nodeB
+undo
+save examples/transforms-normalized.svg

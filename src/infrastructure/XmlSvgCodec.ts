@@ -8,16 +8,19 @@ import {
 import { DomainError } from '../domain/DomainError.js';
 import { Numbers } from '../domain/Numbers.js';
 import { SvgDocument } from '../domain/SvgDocument.js';
+import { SvgString } from '../domain/SvgString.js';
 import { Group } from '../domain/shapes/Group.js';
 import type { Shape } from '../domain/shapes/Shape.js';
 import type { SvgCodec } from '../application/ports/SvgCodec.js';
 import type { ShapeFactory } from '../application/ShapeFactory.js';
+import { SvgImportContext } from './SvgImportContext.js';
 
 /** Strict SVG subset: unsupported constructs fail before replacing the document. */
 export class XmlSvgCodec implements SvgCodec {
   private readonly namespace = 'http://www.w3.org/2000/svg';
   constructor(private readonly factory: ShapeFactory) {}
   decode(source: string): { document: SvgDocument; warnings: readonly string[] } {
+    SvgString.validate(source, 'SVG source');
     if (/<!DOCTYPE|<!ENTITY/i.test(source))
       throw new DomainError('unsupported SVG: DTD and entities');
     let parsed;
@@ -31,6 +34,13 @@ export class XmlSvgCodec implements SvgCodec {
       throw new DomainError('invalid SVG XML');
     }
     const root = parsed.documentElement;
+    if (
+      Array.from(parsed.childNodes).some(
+        (node) => node.nodeType === 7 && node.nodeName === 'xml-stylesheet',
+      )
+    ) {
+      throw new DomainError('unsupported SVG: xml-stylesheet');
+    }
     if (!root || root.localName !== 'svg') throw new DomainError('invalid SVG: root must be <svg>');
     if (root.namespaceURI && root.namespaceURI !== this.namespace)
       throw new DomainError('invalid SVG namespace');
@@ -74,7 +84,12 @@ export class XmlSvgCodec implements SvgCodec {
     this.elements(root).forEach((child) => collect(child));
     const warnings: string[] = [];
     const counters = new Map<string, number>();
-    const visit = (element: Element, parent: Group, depth: number): void => {
+    const visit = (
+      element: Element,
+      parent: Group,
+      depth: number,
+      inherited: SvgImportContext,
+    ): void => {
       if (depth > 128) throw new DomainError('SVG nesting exceeds 128 levels');
       if (element.namespaceURI && element.namespaceURI !== this.namespace)
         throw new DomainError('unsupported SVG namespace');
@@ -94,21 +109,31 @@ export class XmlSvgCodec implements SvgCodec {
         if (attr.prefix && attr.prefix !== 'xml' && attr.prefix !== 'xmlns') {
           throw new DomainError(`unsupported SVG attribute namespace: ${attr.prefix}`);
         }
-        if (attr.name === 'transform' || attr.name === 'style' || /^on/i.test(attr.name))
+        if (attr.name === 'style' || /^on/i.test(attr.name))
           throw new DomainError(`unsupported SVG attribute: ${attr.name}`);
         attributes[attr.name] = attr.value;
       }
-      const shape = this.factory.fromSvg(tag, id, attributes, element.textContent ?? '');
+      const context = inherited.child(attributes);
+      const shape = this.factory.fromSvg(
+        tag,
+        id,
+        context.normalizedAttributes(),
+        element.textContent ?? '',
+      );
+      const childContext = context.apply(shape);
       const children = this.elements(element);
       if (children.length && !(shape instanceof Group))
         throw new DomainError(`unsupported child elements in <${tag}>`);
       if (shape instanceof Group && this.nonWhitespaceText(element))
         throw new DomainError('unsupported text outside <text>');
       document.add(shape, parent);
-      if (shape instanceof Group) children.forEach((child) => visit(child, shape, depth + 1));
+      if (shape instanceof Group)
+        children.forEach((child) => visit(child, shape, depth + 1, childContext));
     };
     if (this.nonWhitespaceText(root)) throw new DomainError('unsupported text outside <text>');
-    this.elements(root).forEach((element) => visit(element, document.root, 1));
+    this.elements(root).forEach((element) =>
+      visit(element, document.root, 1, SvgImportContext.root()),
+    );
     document.validate();
     return { document, warnings };
   }
@@ -134,9 +159,17 @@ export class XmlSvgCodec implements SvgCodec {
     };
     document.root.children().forEach((shape) => append(shape, root, 1));
     root.appendChild(xml.createTextNode('\n'));
-    return `<?xml version="1.0" encoding="UTF-8"?>\n${new XMLSerializer().serializeToString(xml)}\n`;
+    const serialized = new XMLSerializer().serializeToString(xml).replace(/\r/g, '&#13;');
+    return `<?xml version="1.0" encoding="UTF-8"?>\n${serialized}\n`;
   }
   private elements(parent: Element): Element[] {
+    if (
+      Array.from(parent.childNodes).some(
+        (node) => node.nodeType === 7 && node.nodeName === 'xml-stylesheet',
+      )
+    ) {
+      throw new DomainError('unsupported SVG: xml-stylesheet');
+    }
     return Array.from(parent.childNodes).filter(
       (node: Node): node is Element => node.nodeType === 1,
     );

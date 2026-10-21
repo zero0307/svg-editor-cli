@@ -256,11 +256,54 @@ test('successful CLI edits always remain within the readable SVG nesting limit',
   assert.equal(h.codec.encode(h.codec.decode(before).document), before);
 });
 
-test('history retains the most recent 100 edits', async () => {
+test('history can undo and redo every edit beyond 100 steps', async () => {
   const h = new TestHarness();
   await h.run('init', 'create circle c 0 0 1');
   for (let i = 0; i < 105; i++) await h.run('move c 1 0');
-  for (let i = 0; i < 100; i++) await h.run('undo');
-  assert.equal(h.editor.document().require('c').geometry().cx, '5');
+  for (let i = 0; i < 106; i++) await h.run('undo');
+  assert.deepEqual(h.ids(), []);
   assert.deepEqual(await h.router.execute('undo'), ['error: nothing to undo']);
+  for (let i = 0; i < 106; i++) await h.run('redo');
+  assert.equal(h.editor.document().require('c').geometry().cx, '105');
+});
+
+test('ungroup resolves explicit inherit before the child changes parent', async () => {
+  const h = new TestHarness();
+  await h.run(
+    'init',
+    'create g outer',
+    'set outer fill blue',
+    'create g inner in outer',
+    'set inner fill red',
+    'create rect r 0 0 10 10 inherit in inner',
+  );
+  const before = h.snapshot();
+  await h.run('ungroup inner');
+  assert.equal(h.editor.document().require('r').attributes().fill, 'red');
+  await h.run('undo');
+  assert.equal(h.snapshot(), before);
+  await h.run('redo');
+  assert.equal(h.editor.document().require('r').attributes().fill, 'red');
+});
+
+test('ungroup resolves inherit chains and falls back to SVG initial values', async () => {
+  const h = new TestHarness();
+  await h.run(
+    'init',
+    'create g outer',
+    'set outer fill inherit',
+    'set outer stroke green',
+    'create g middle in outer',
+    'set middle fill inherit',
+    'set middle stroke inherit',
+    'create g inner in middle',
+    'set inner fill inherit',
+    'set inner stroke inherit',
+    'create rect r 0 0 10 10 inherit in inner',
+    'set r stroke inherit',
+    'ungroup inner',
+  );
+  const attributes = h.editor.document().require('r').attributes();
+  assert.equal(attributes.fill, 'black');
+  assert.equal(attributes.stroke, 'green');
 });

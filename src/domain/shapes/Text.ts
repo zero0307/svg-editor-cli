@@ -1,4 +1,5 @@
 import { GeometryShape } from './GeometryShape.js';
+import { SvgString } from '../SvgString.js';
 
 export class Text extends GeometryShape {
   readonly tag = 'text';
@@ -9,6 +10,7 @@ export class Text extends GeometryShape {
     private content: string,
   ) {
     super(id, { x, y }, []);
+    SvgString.validate(content, 'text');
   }
   override move(dx: number, dy: number): void {
     this.translate(['x'], ['y'], dx, dy);

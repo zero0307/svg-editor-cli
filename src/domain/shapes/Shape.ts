@@ -1,5 +1,6 @@
 import { DomainError } from '../DomainError.js';
 import { Numbers } from '../Numbers.js';
+import { SvgString } from '../SvgString.js';
 import type { Group } from './Group.js';
 
 export abstract class Shape {
@@ -7,6 +8,7 @@ export abstract class Shape {
   private readonly styles = new Map<string, string>();
   private readonly imported = new Map<string, string>();
   constructor(readonly id: string) {
+    SvgString.validate(id, 'id');
     if (!id || /[\s\u0000-\u001f]/u.test(id)) throw new DomainError(`invalid id: ${id}`);
   }
   abstract readonly tag: string;
@@ -36,6 +38,7 @@ export abstract class Shape {
     });
   }
   setAttribute(name: string, value: string): void {
+    SvgString.validate(value, `attribute ${name}`);
     if (name === 'fill' || name === 'stroke') {
       this.styles.set(name, value);
       return;
@@ -50,6 +53,7 @@ export abstract class Shape {
     throw new DomainError(`unknown attribute: ${name}`);
   }
   preserveAttribute(name: string, value: string): void {
+    SvgString.validate(value, `attribute ${name}`);
     this.imported.set(name, value);
   }
   protected copyPresentationTo(target: Shape): void {

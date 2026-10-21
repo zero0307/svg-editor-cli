@@ -6,11 +6,9 @@ export class CommandHistory {
   private readonly undoStack: EditCommand[] = [];
   private readonly redoStack: EditCommand[] = [];
   private blocked = false;
-  constructor(private readonly limit = 100) {}
   execute(command: EditCommand, document: SvgDocument): { document: SvgDocument; message: string } {
     const result = command.execute(document);
     this.undoStack.push(command);
-    if (this.undoStack.length > this.limit) this.undoStack.shift();
     this.redoStack.length = 0;
     this.blocked = false;
     return result;
