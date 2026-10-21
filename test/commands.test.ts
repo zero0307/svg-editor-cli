@@ -147,6 +147,21 @@ test('IO barriers block both stacks; a successful edit starts fresh history', as
   }
 });
 
+test('explicit save keeps the original read path as the parameterless save target', async () => {
+  const h = new TestHarness();
+  h.files.set('source.svg', '<svg/>');
+  await h.run('read source.svg', 'create g first', 'save export.svg');
+  const exported = h.files.get('export.svg');
+  await h.run('create g second', 'save');
+  assert.equal(h.files.get('export.svg'), exported);
+  assert.equal(h.files.get('source.svg'), h.snapshot());
+  assert.match(h.files.get('source.svg')!, /id="second"/);
+  await h.run('read export.svg', 'create g third', 'save');
+  assert.equal(h.files.get('export.svg'), h.snapshot());
+  await h.run('init', 'save fresh.svg', 'create g fresh', 'save other.svg', 'save');
+  assert.equal(h.files.get('fresh.svg'), h.snapshot());
+});
+
 test('failed IO preserves document, history and remembered save path', async () => {
   const h = new TestHarness();
   await h.run('init', 'save original.svg', 'create circle c 1 2 3');

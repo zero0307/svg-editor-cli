@@ -37,7 +37,9 @@ export class SvgEditor {
     const target = path ?? this.path;
     if (!target) throw new DomainError('no file path. use save <file.svg>');
     await this.files.write(target, this.codec.encode(document));
-    this.path = target;
+    // An explicit export must not change the default established by read.
+    // A newly initialized document may remember its first successful save.
+    this.path ??= target;
     this.history.barrier();
     return `saved to ${target} (${document.all().length} elements)`;
   }
