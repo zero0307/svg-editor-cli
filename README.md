@@ -1,6 +1,6 @@
 # SVG Editor CLI
 
-高级软件开发 Lab1 Phase 1：使用 TypeScript、Command 和 Composite 模式实现的 SVG 命令行编辑器。
+高级软件开发 Lab1 Phase 1 作业，用 TypeScript 实现 SVG 命令行编辑。编辑操作采用 Command 模式，图形与分组采用 Composite 模式。
 
 ## 快速开始
 
@@ -22,7 +22,7 @@ svg> tree
 svg> save demo.svg
 ```
 
-用浏览器打开 `demo.svg` 即可预览。使用 `help` 查看所有命令。交互模式通过 Ctrl+D（Unix）或 Ctrl+Z 后回车（Windows）退出。
+保存后，用浏览器打开 `demo.svg` 查看结果。输入 `help` 可查看全部命令；退出交互模式时，Unix 使用 Ctrl+D，Windows 使用 Ctrl+Z 后回车。
 
 ## 示例与验证
 
@@ -35,15 +35,15 @@ npm run test:coverage
 npm run verify:visual
 ```
 
-本地检查可直接运行；[GitHub Actions 模板](ci/README.md) 已准备，因当前 GitHub 授权缺少 workflow 权限尚未启用。
+上述检查可在本地运行。[GitHub Actions 模板](ci/README.md) 也已准备好，但当前 GitHub 授权缺少 workflow 权限，尚未启用。
 
-示例会生成 `examples/flowchart.svg` 和 `examples/history.svg`。构建后也可直接运行 `node dist/src/bootstrap/main.js`，通过标准输入传入命令，或使用 `--script "含空格的路径"`。脚本在错误后继续处理剩余行，出现错误时最终退出码为 1；全部成功为 0。
+流程图和历史示例会生成 `examples/flowchart.svg`、`examples/history.svg`。构建后，也可以运行 `node dist/src/bootstrap/main.js`，从标准输入读取命令，或用 `--script "含空格的路径"` 读取脚本。脚本遇到错误后会继续处理剩余行；只要出现过错误，退出码就是 1，全部成功则为 0。
 
-支持六种内置类型和全部 19 条课程命令；支持嵌套分组、完整编辑历史、SVG 读写、自动补 id、原子编辑和原子文件替换。`box` 属后续插件阶段。
+目前已实现课程要求的六种内置类型和 19 条命令，包括嵌套分组、完整撤销/重做、SVG 读写和自动补 id。编辑失败时保留原文档，保存文件时采用原子替换。`box` 留待后续插件阶段实现。
 
-导入器支持这六类元素构成的 SVG 子集，包括嵌套的 translate 和正等比 scale。导入时归一化为画布坐标，保留分组、字号与描边语义。暂不支持旋转、不等比缩放、CSS、path、tspan 和不同坐标系的 viewBox；不支持的结构明确报错并保留原文档。详见 [架构、过程记录与验收说明](doc/README.md)。
+SVG 导入范围限于这六类元素，支持嵌套的 translate 和正等比 scale。导入器会将坐标转换为画布坐标，同时保留分组、字号与描边的含义。旋转、不等比缩放、CSS、path、tspan 和不同坐标系的 viewBox 暂不支持，遇到这些结构会报错并保留原文档。具体约束见 [架构、过程记录与验收说明](doc/README.md)。
 
-`npm run verify:visual` 通过本地 resvg-js 生成预览，并验证课程变换示例在导入前后的渲染像素一致，不需要浏览器或网络服务。[交付清单与演示步骤](doc/DELIVERY.md)列出了验收命令和正式提交事项。
+`npm run verify:visual` 使用本地 resvg-js 生成预览，比较课程变换示例在导入前后的渲染像素。该检查不需要浏览器或网络服务。[交付清单与演示步骤](doc/DELIVERY.md)列出了验收命令和提交前要处理的事项。
 
 ## 文件导航
 
@@ -54,4 +54,4 @@ npm run verify:visual
 - [分组和撤销示例](examples/history.commands)
 - [嵌套变换导入示例](examples/transforms.commands)
 
-本工程使用唯一运行时依赖 [@xmldom/xmldom](https://github.com/xmldom/xmldom) 解析和序列化 XML；测试使用 [Node.js 内置测试运行器](https://nodejs.org/docs/latest-v24.x/api/test.html)。
+运行时只依赖 [@xmldom/xmldom](https://github.com/xmldom/xmldom)，用于解析和序列化 XML。测试使用 [Node.js 内置测试运行器](https://nodejs.org/docs/latest-v24.x/api/test.html)。
