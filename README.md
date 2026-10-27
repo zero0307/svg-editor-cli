@@ -45,6 +45,10 @@ SVG 导入范围限于这六类元素，支持嵌套的 translate 和正等比 s
 
 `npm run verify:visual` 使用本地 resvg-js 生成预览，比较课程变换示例在导入前后的渲染像素。该检查不需要浏览器或网络服务。[交付清单与演示步骤](doc/DELIVERY.md)列出了验收命令和提交前要处理的事项。
 
+## 课程平台提交
+
+课程平台要求上传一份包含 Git 仓库地址的 `README.md`，提交文件已放在 [doc/submission/README.md](doc/submission/README.md)。其中列出了仓库地址、final 标签、完整实验报告和运行方式。
+
 ## 文件导航
 
 - [课程需求](phase_cli_1.md)
